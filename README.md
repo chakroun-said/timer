@@ -131,36 +131,40 @@ Caching strategy in `web/sw.js`:
 deprecated no-op service worker that unregisters itself and force-reloads every
 open window, which would interrupt a running workout.
 
-### Deploying to GitHub Pages
+### Deploying to Cloudflare Pages
 
-`.github/workflows/deploy-web.yml` builds and publishes the app on every push to
-`main` (and on demand from the Actions tab). The app ends up at
-`https://<owner>.github.io/<repo>/`.
+`.github/workflows/deploy-cloudflare.yml` builds and publishes the app on every
+push to `main` (and on demand from the Actions tab). The app ends up at
+`https://<PROJECT_NAME>.pages.dev`, where `PROJECT_NAME` is the `env` value at
+the top of the workflow (`workouts-timer` by default).
 
-1. Create an empty repository on GitHub — do **not** let it add a README or
-   `.gitignore`, the project already has one.
-2. Push this project to it:
+Cloudflare Pages is used rather than GitHub Pages because Pages on a private
+repository requires a paid GitHub plan; the Cloudflare Pages free plan serves
+static assets with unlimited requests and bandwidth. The repository can stay
+private.
 
-   ```bash
-   git init -b main
-   git add .
-   git commit -m "Add web PWA support and Pages deployment"
-   git remote add origin https://github.com/<owner>/<repo>.git
-   git push -u origin main
-   ```
+Setup, once:
 
-3. In the repository: **Settings → Pages → Build and deployment → Source →
-   GitHub Actions**. This is required, otherwise the deploy job fails.
-4. Watch the run under the **Actions** tab, then open
-   `https://<owner>.github.io/<repo>/`.
+1. Create a free account at <https://dash.cloudflare.com/sign-up>.
+2. Create an API token at <https://dash.cloudflare.com/?to=/:account/api-tokens>
+   → **Create Token** → **Custom token** → **Get started**, with permission
+   **Account → Cloudflare Pages → Edit**.
+3. Find the **Account ID** in the dashboard (Workers & Pages overview, right-hand
+   sidebar).
+4. Add both as repository secrets (**Settings → Secrets and variables → Actions →
+   New repository secret**):
+   - `CLOUDFLARE_API_TOKEN`
+   - `CLOUDFLARE_ACCOUNT_ID`
+5. Push to `main`.
 
 The workflow runs `flutter analyze` and `flutter test` before building, so a
-failing check blocks the deployment.
+failing check blocks the deployment. The first run creates the Pages project
+automatically — no manual project setup in the dashboard is required.
 
-The base href is derived from the repository name rather than hard-coded: a
-project site is served from `/<repo>/`, and a user site (repo named
-`<owner>.github.io`) is served from `/`. Building a project site without
-`--base-href "/<repo>/"` makes every asset 404 and the page stay blank.
+Deployment is a **Direct Upload** project driven by Wrangler, not Cloudflare's
+Git integration. This is deliberate: Cloudflare's build image does not include
+the Flutter SDK, so the Flutter build happens in GitHub Actions and only the
+finished `build/web` output is uploaded.
 
 ## Usage Guide
 
