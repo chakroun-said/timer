@@ -20,8 +20,8 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="description" content="Workout interval timer with multiple timed sets and rest periods.">
-  <!-- Matches the app's Material 3 primary colour, so the browser chrome blends with the UI. -->
-  <meta name="theme-color" content="#36618E">
+  <!-- Matches the app's backdrop tint, so the browser chrome blends with the UI. -->
+  <meta name="theme-color" content="#EDF2FB">
   <meta name="color-scheme" content="light">
 
   <!-- iOS meta tags & icons -->
@@ -35,6 +35,10 @@
 
   <title>Workout Timer</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    /* Matches the Flutter backdrop so the first paint has no white flash. */
+    html, body { background-color: #EDF2FB; margin: 0; }
+  </style>
 </head>
 <body>
   <!--

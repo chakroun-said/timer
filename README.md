@@ -166,6 +166,56 @@ Git integration. This is deliberate: Cloudflare's build image does not include
 the Flutter SDK, so the Flutter build happens in GitHub Actions and only the
 finished `build/web` output is uploaded.
 
+### Deploying to the EC2 instance
+
+The app can also be served from the EC2 host by nginx.
+`tool/deploy-ec2.ps1` builds the PWA, uploads it as a single archive and
+installs it:
+
+```powershell
+.\tool\deploy-ec2.ps1                 # build and deploy to https://16-171-32-1.sslip.io/
+.\tool\deploy-ec2.ps1 -SkipBuild      # redeploy the existing build/web
+```
+
+Defaults are user `ubuntu`, key `%USERPROFILE%\Downloads\said.pem`, host
+`16.171.32.1` and server name `16-171-32-1.sslip.io`; override them with
+`-User`, `-KeyPath`, `-HostName` and `-ServerName`. The script fails loudly if
+the uploaded archive does not match the local build.
+
+`deploy/ec2/install.sh` does the server-side work:
+
+- extracts the release into `/var/www/workouts-timer.new` and swaps it in, so
+  the live directory is never half-populated;
+- reuses the Let's Encrypt certificate for the server name when one exists, and
+  otherwise falls back to a self-signed certificate;
+- installs `deploy/ec2/workouts-timer.conf` (HTTP and HTTPS server blocks) plus
+  `deploy/ec2/workouts-timer-app.conf` (gzip, single-page fallback and cache
+  headers), disables nginx's stock `default` site and reloads nginx.
+
+Cache headers are what keep the PWA correct across releases: `index.html`,
+`main.dart.js`, `sw.js`, the bootstrap scripts and the manifest are served
+`no-cache`, while `/assets/`, `/canvaskit/` and `/icons/` are immutable.
+
+**Install prompt requires a trusted certificate.** The host has no domain, so
+the free DNS name `16-171-32-1.sslip.io` (sslip.io resolves any
+`a-b-c-d.sslip.io` name to `a.b.c.d`) is used to get a publicly trusted
+certificate. A self-signed certificate is *not* enough: the service worker
+still registers and offline caching works, but Chrome reports
+`not-from-secure-origin` from `Page.getInstallabilityErrors` and never offers
+"Install app". Issue the certificate once with:
+
+```bash
+sudo apt-get install -y certbot
+sudo certbot certonly --webroot -w /var/www/workouts-timer \
+  -d 16-171-32-1.sslip.io --non-interactive --agree-tos \
+  --register-unsafely-without-email --deploy-hook 'systemctl reload nginx'
+```
+
+Renewal is handled by `certbot.timer`, and the deploy hook reloads nginx after
+each renewal. To move to a real domain, point its A record at `16.171.32.1`,
+issue the certificate for that name with the same command, then deploy with
+`-ServerName your.domain`.
+
 ## Usage Guide
 
 ### Creating a Workout
