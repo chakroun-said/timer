@@ -7,7 +7,7 @@
 //
 // Bump CACHE_VERSION whenever the caching strategy below changes.
 const CACHE_PREFIX = 'workout-timer-';
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const SHELL_INDEX = './index.html';
 
@@ -26,6 +26,8 @@ const SHELL_ASSETS = [
   './assets/fonts/MaterialIcons-Regular.otf',
   './assets/assets/sounds/bell.mp3',
   './assets/assets/sounds/beep.mp3',
+  './assets/assets/background/gym.webp',
+  './assets/assets/background/gym-soft.webp',
   './icons/Icon-192.png',
   './icons/Icon-512.png',
   './icons/Icon-maskable-192.png',

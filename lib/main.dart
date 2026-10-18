@@ -18,13 +18,13 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: colors,
         useMaterial3: true,
-        // The fitness backdrop supplies the page background, so scaffolds and
-        // the app bar paint only a tint over it.
-        scaffoldBackgroundColor: Colors.transparent,
+        // The photo supplies the page background; content floats on a light
+        // veil so text stays readable and the photo reads as atmosphere.
+        scaffoldBackgroundColor: colors.surface.withAlpha(0xCC),
         appBarTheme: AppBarTheme(
-          // Same tint as the frame so the bar dissolves into the column while
-          // still hiding content that scrolls beneath it.
-          backgroundColor: colors.surface.withAlpha(0xE4),
+          // Slightly denser than the page veil so content scrolling beneath the
+          // bar fades out instead of clashing with the title.
+          backgroundColor: colors.surface.withAlpha(0xDE),
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
@@ -55,27 +55,33 @@ class _AppFrame extends StatelessWidget {
 
     return Stack(
       children: [
-        const Positioned.fill(child: FitnessBackdrop()),
+        Positioned.fill(child: FitnessBackdrop(blurred: !framed)),
         Positioned.fill(
           child: framed
               ? Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: _maxContentWidth,
-                    ),
-                    // Translucent so the artwork carries through the column.
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: colors.surface.withAlpha(0xE4),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x1F0B1F3A),
-                            blurRadius: 40,
-                            offset: Offset(0, 12),
-                          ),
-                        ],
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    // Opaque and rounded: the photo frames the app instead of
+                    // showing through the reading surface.
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: _maxContentWidth,
                       ),
-                      child: child,
+                      child: Container(
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x59000000),
+                              blurRadius: 56,
+                              offset: Offset(0, 18),
+                            ),
+                          ],
+                        ),
+                        child: child,
+                      ),
                     ),
                   ),
                 )
